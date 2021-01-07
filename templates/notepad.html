@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block style %}
+    <style>
+        #notepad {
+            height: 100%;
+            width: 100%;
+            position: fixed;
+            border: 0px;
+            text-align: justify;
+        }
+        #notepad:focus {
+            outline: none;
+        }
+    </style>
+{% endblock %}
+
+{% block script %}
+    <script>
+        var rhavpad = {
+         update_time: 2000,
+         save: false,
+         load: function() {
+            document.getElementById("notepad").focus();
+            document.getElementById("notepad").addEventListener("keydown", function(e) {e.keyCode == 9? false: true;})
+            document.getElementById("notepad").addEventListener('keyup', function(e) { rhavpad.changed = true});
+            window.setInterval(function() { rhavpad.changed ? rhavpad.save() : rhavpad.update(); }, rhavpad.update_time);
+         },
+
+        save: function() {
+            xmlDoc = new XMLHttpRequest();
+            xmlDoc.open('PUT', '', true);
+            xmlDoc.send(document.getElementById("notepad").value);
+            rhavpad.changed = false;
+        },
+
+        update: function() {
+            xmlDoc = new XMLHttpRequest();
+            xmlDoc.open('POST', '', true);
+            xmlDoc.onload = function(e) {
+                if (xmlDoc.response != null)
+                    document.getElementById("notepad").value = JSON.parse(xmlDoc.response).note;
+            }
+            xmlDoc.send();
+        }
+
+       };
+
+        document.onreadystatechange = () => {
+          if (document.readyState === 'complete') {
+            rhavpad.load();
+          }
+        };
+
+    </script>
+{% endblock %}
+
+{% block content %}
+    <div class="custom-control" tabindex="0">
+        <textarea id="notepad">{{ note }}</textarea>
+    </div>
+{% endblock %}

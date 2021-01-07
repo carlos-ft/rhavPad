@@ -1,0 +1,28 @@
+version: '3.7'
+
+services:
+  redis:
+    image: redis
+    command: redis-server
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+  python:
+    build: ./
+    command: gunicorn --bind 0.0.0.0:5000 wsgi:app
+    ports:
+      - 5000:5000
+    env_file:
+      - ./.env.dev
+    depends_on:
+      - redis
+  nginx:
+    build: ./nginx
+    ports:
+      - 443:443
+      - 80:80
+    depends_on:
+      - python
+volumes:
+  redis_data:
